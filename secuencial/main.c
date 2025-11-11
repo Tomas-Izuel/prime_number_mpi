@@ -1,50 +1,55 @@
 #include <stdio.h>
 #include <time.h>
+#include <stdlib.h>
 #include "../matrices.h"
 
-// Función para procesar una matriz secuencialmente y contar primos
-int procesar_matriz_secuencial(int **matriz, int n) {
+// Función para procesar una matriz secuencialmente 
+int procesar_matriz_secuencial(int* matriz, int M, int R) {
     if (matriz == NULL) return 0;
     
     int primos_encontrados = 0;
     
     // Procesar toda la matriz secuencialmente
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < n; j++) {
-            int valor = matriz[i][j];
+    for (int i = 0; i < M; i++) {
+        for (int j = 0; j < R; j++) {
+            int valor = matriz[i * R + j]; 
             if (es_primo(valor)) {
                 primos_encontrados++;
             }
         }
     }
-    
     return primos_encontrados;
 }
 
-int main() {
+int main(int argc, char **argv) {
     
-    printf("Creando matrices...\n");
-    int **matriz_pequena = NULL, **matriz_mediana = NULL, **matriz_grande = NULL;
-    crear_matrices_especificas(&matriz_pequena, &matriz_mediana, &matriz_grande);
+    if (argc != 3) {
+        printf("Error: Se requieren 2 argumentos: M y R\n");
+        printf("Ejemplo: ./programa_secuencial 5000 5000\n");
+        return 1;
+    }
+
+    const int M = atoi(argv[1]);
+    const int R = atoi(argv[2]);
     
+    printf("Creando matriz %dx%d...\n", M, R);
+    int* matriz = crear_matriz(M, R);
+    if (matriz == NULL) return 1;
+    
+    llenar_matriz(matriz, M, R);
+    printf("Matriz creada\n");
+
     clock_t start_time = clock();
     
-    int total_primos_pequena = procesar_matriz_secuencial(matriz_pequena, 1000);
-    
-    int total_primos_mediana = procesar_matriz_secuencial(matriz_mediana, 5000);
-    
-    int total_primos_grande = procesar_matriz_secuencial(matriz_grande, 10000);
+    int total_primos = procesar_matriz_secuencial(matriz, M, R);
     
     clock_t end_time = clock();
     double tiempo_resolucion = ((double)(end_time - start_time)) / CLOCKS_PER_SEC;
     
-    printf("Matriz pequeña (1000x1000): %d primos\n", total_primos_pequena);
-    printf("Matriz mediana (5000x5000): %d primos\n", total_primos_mediana);
-    printf("Matriz grande (10000x10000): %d primos\n", total_primos_grande);
-    printf("Tiempo de resolución: %f segundos\n", tiempo_resolucion);
+    printf("\n--- Resultados ---\n");
+    printf("Matriz (%dx%d): %d primos - Tiempo: %f segundos\n", M, R, total_primos, tiempo_resolucion);
     
-    // Liberar memoria de las matrices
-    liberar_todas_las_matrices(matriz_pequena, matriz_mediana, matriz_grande);
+    liberar_matriz(matriz);
     
     return 0;
 }
